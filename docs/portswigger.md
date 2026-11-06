@@ -143,12 +143,12 @@ GET /filter?category='+UNION+SELECT+NULL,NULL,NULL-- HTTP/2
 При авторизации под учетной записью `wiener:peter` и попытке смены email, с помощью Burp Suite был перехвачен следующий запрос:
 
 ```http
-POST /my-account/change-email HTTP/1.1
+POST /my-account/change-email HTTP/2
 Host: 0a6b00ea03585be6808e12ed007d005b.web-security-academy.net
 Cookie: session=...
 Content-Type: application/x-www-form-urlencoded
 
-email=test%40test.com
+email=test%40tast.com
 ```
 Запрос уязвим, так как содержит только параметр `email` и не требует подтверждения действий пользователя.
 
