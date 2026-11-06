@@ -96,7 +96,7 @@ GET /filter?category=Accessories HTTP/2
 В параметр `category` поочередно внедрялась конструкция `ORDER BY <N>--`.
  - При `' ORDER BY 1--` и `' ORDER BY 2--` приложение возвращало нормальный ответ.
  - При `' ORDER BY 3--` ответ также был успешным.
- - При вводе `' ORDER BY 4--` приложение вернуло ошибку `500 Internal Server Error (The ORDER BY position number 4 is out of range...)`.
+ - При вводе `' ORDER BY 4--` приложение вернуло ошибку.
 
 **Вывод:** Оригинальный запрос возвращает ровно 3 столбца.
 
